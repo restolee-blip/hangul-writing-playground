@@ -18,8 +18,12 @@
 .main-choices .main-name{background:#fff1d8;border-color:#ead0a5}
 .main-art{display:block;width:min(calc(100% - 8px),154px);height:auto;aspect-ratio:1;object-fit:contain;border-radius:clamp(8px,2vw,15px);pointer-events:none}
 .main-choices .main-card strong{margin:0;font-size:clamp(12px,3.7vw,25px);letter-spacing:-.055em;line-height:1.2;white-space:nowrap}
+.header-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+#muteVoice{font:inherit;font-size:14px;font-weight:750;min-height:44px;padding:6px 10px;border-radius:12px;white-space:nowrap}
+#muteVoice[aria-pressed="true"]{background:#e8dfca;border-color:#b9a677}
+@media(max-width:420px){.header-controls .tag{display:none}}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><span class="tag">그림 메뉴 v3.3</span></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.4</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -151,6 +155,9 @@ function avatarIcon(key){
 const defaults={difficulty:'easy',voice:true,auto:false,numbers:true,arrows:true,start:true,lines:true,repeat:true,stage:'trace',speed:1};
 const initial=()=>({version:2,profiles:[],catalog:Object.fromEntries(groups.filter(g=>g.id!=='name').map(g=>[g.id,g.letters.map((text,i)=>({id:g.id+i,text,hidden:false}))])),settings:{...defaults},hidden:[],pin:'',active:'guest',sessions:{},records:[],paths:{}});
 const key='sseuk-writing-v2', legacyKey='sseuk-writing-prototype-v1';
+const muteKey='sseuk-writing-muted';
+let muted=false;
+try{muted=localStorage.getItem(muteKey)==='1'}catch{}
 let db=initial(),storageOK=true;
 try{
  const stored=JSON.parse(localStorage.getItem(key));
@@ -182,8 +189,19 @@ function persist(){
 }
 const lettersOf=text=>[...text.replace(/ /g,'')];
 const displayName=()=>person()?.name??'함께 연습';
+function updateMuteButton(){
+ const button=$('muteVoice');
+ button.textContent=muted?'음소거 해제':'음소거';
+ button.setAttribute('aria-pressed',String(muted));
+}
+function toggleMute(){
+ muted=!muted;
+ if(muted&&'speechSynthesis' in window)speechSynthesis.cancel();
+ try{localStorage.setItem(muteKey,muted?'1':'0')}catch{}
+ updateMuteButton();
+}
 function speak(text){
- if(!db.settings.voice||!('speechSynthesis' in window))return;
+ if(muted||!db.settings.voice||!('speechSynthesis' in window))return;
  const voice=speechSynthesis.getVoices().find(v=>/^ko([-_]|$)/i.test(v.lang)&&v.localService);
  if(!voice)return;
  speechSynthesis.cancel();
@@ -691,6 +709,8 @@ function recordsPanel(filter=''){
  };
 }
 window.addEventListener('resize',()=>{if(active!==null){active=null;draft=[];paint()}});
+$('muteVoice').addEventListener('click',toggleMute);
+updateMuteButton();
 render();
 if(window.isSecureContext&&location.protocol!=='file:'&&'serviceWorker' in navigator)navigator.serviceWorker.register('../sw.js',{updateViaCache:'none'}).catch(()=>{});
 </script></body></html>
