@@ -32,8 +32,29 @@
 .overview-grid img{display:block;width:100%;height:42px;object-fit:contain}
 #next.complete-next{display:block;width:min(100%,320px);margin:8px auto 0;min-height:54px;padding:8px 12px;background:#205db0;color:#fff;font-size:19px;font-weight:900}
 #next.complete-next[hidden]{display:none}
+.practice-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(45px,1fr));gap:6px;max-width:660px;margin:16px auto 0}
+.practice-tabs button{min-height:48px;padding:6px 2px;border-radius:12px;background:#eaf2fa}
+.practice-tabs [aria-pressed=true]{background:#205db0;color:#fff}
+.sheet,.controls,.work>*{min-width:0}
+.board{width:min(100%,525px);max-width:100%}
+@media(max-width:600px){
+ .main-choices{grid-auto-flow:row;grid-template-columns:minmax(0,1fr);gap:8px}
+ .main-choices .main-card{grid-template-columns:60px minmax(0,1fr);justify-items:start;align-items:center;min-height:72px;gap:12px;padding:5px 10px;text-align:left}
+ .main-choices .main-card strong{font-size:clamp(17px,5vw,23px);white-space:normal}
+ .main-art{width:60px}
+ .work{grid-template-columns:minmax(0,1fr);gap:8px}
+ .board{width:min(100%,400px,max(220px,calc(100svh - 225px)))}
+ .tools{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .tools button{font-size:12px}
+ .title{text-align:center;overflow-wrap:anywhere}
+ .admin form label,.admin input,.admin textarea{min-width:0;max-width:100%}
+}
+@media(max-height:520px) and (orientation:landscape) and (min-width:601px){
+ .work{grid-template-columns:minmax(0,1fr) minmax(190px,32%)}
+ .board{width:min(100%,max(150px,calc(100svh - 177px)))}
+}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.5</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.6</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -183,6 +204,7 @@ try{
  }
 }catch{storageOK=false}
 let state=null, screen='home', timer=0, demoToken=0, active=null, draft=[], failed=0, showHint=false, message='', demo=null, choosing='', page=0, admin=false;
+let learningGroup='con';
 const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=()=>globalThis.crypto?.randomUUID?.()??Date.now().toString(36)+Math.random().toString(36).slice(2);
 const h=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -257,8 +279,7 @@ function advance(){
  else choose(state.group);
 }
 function scheduleNext(){
- if(state.group==='words')return;
- if(complete()&&state.index+1<lettersOf(state.text).length&&db.settings.auto)timer=setTimeout(advance,850);
+ if(complete()&&state.index+1<lettersOf(state.text).length&&(state.group==='words'||db.settings.auto))timer=setTimeout(advance,850);
  else if(complete()&&db.settings.auto&&['con','vow','plain','tail'].includes(state.group)&&rows(state.group).some((x,i,a)=>x.id===state.id&&i<a.length-1))timer=setTimeout(advance,850);
 }
 function logCompletion(){
@@ -281,9 +302,6 @@ const mainArt={
 };
 function mainCard(id,title,attribute){
  return '<button class="card main-card main-'+id+'" '+attribute+'><img class="main-art" src="'+mainArt[id]+'" width="420" height="420" alt="" draggable="false"><strong>'+title+'</strong></button>';
-}
-function groupButtons(list){
- return list.map(g=>'<button class="card" data-group="'+g.id+'"><strong aria-hidden="true">'+g.art+'</strong>'+g.title+'</button>').join('');
 }
 function bindGroups(){
  app.querySelectorAll('[data-group]').forEach(b=>b.onclick=()=>{
@@ -332,10 +350,17 @@ function render(){
   return;
  }
  if(screen==='learn'){
-  const basic=visible.filter(g=>['con','vow','words'].includes(g.id));
-  const extra=visible.filter(g=>['plain','tail'].includes(g.id));
-  app.innerHTML='<section class="home"><h1>한눈에 골라요</h1><div class="overview">'+basic.map(g=>overviewSection(g,rows(g.id))).join('')+'</div>'+ (extra.length?'<div class="choices">'+groupButtons(extra)+'</div>':'')+'<button class="return" id="home">처음으로</button></section>';
-  bindOverview();bindGroups();$('home').onclick=home;return;
+  const tabs=[['con','자음'],['vow','모음'],['words','단어'],['plain','글자'],['tail','받침']].filter(([id])=>visible.some(g=>g.id===id));
+  if(!tabs.some(([id])=>id===learningGroup))learningGroup=tabs[0]?.[0];
+  const group=visible.find(g=>g.id===learningGroup);
+  const buttons=tabs.map(([id,label])=>'<button type="button" data-practice="'+id+'" aria-pressed="'+(id===learningGroup)+'">'+label+'</button>').join('');
+  app.innerHTML='<section class="home"><h1>무엇을 써 볼까요?</h1><nav class="practice-tabs" aria-label="글자 쓰기 메뉴">'+buttons+'</nav><div class="overview">'+(group?overviewSection(group,rows(group.id)):'')+'</div><div class="homefoot">'+(learningGroup==='words'&&rows('words').length?'<button id="randomWord">랜덤 단어 쓰기</button>':'')+'<button id="home">처음으로</button></div></section>';
+  app.querySelectorAll('[data-practice]').forEach(button=>button.onclick=()=>{
+   learningGroup=button.dataset.practice;
+   render();
+   app.querySelector('[data-practice="'+learningGroup+'"]')?.focus();
+  });
+  bindOverview();$('home').onclick=home;$('randomWord')?.addEventListener('click',()=>randomWord());return;
  }
  if(screen==='choose'){
   const group=groups.find(g=>g.id===choosing), list=rows(choosing);
@@ -412,8 +437,10 @@ function paint(){
   document.getElementById('undo').disabled=!index;
   const list=rows(state.group), row=list.findIndex(x=>x.id===state.id), length=lettersOf(state.text).length;
   $('prev').disabled=state.index===0&&(length>1||row<=0||['words','name'].includes(state.group));
-  $('next').hidden=!complete();
-  $('next').disabled=!complete();
+  const advancingWord=complete()&&state.group==='words'&&state.index+1<length;
+  $('next').hidden=!complete()||advancingWord;
+  $('next').disabled=$('next').hidden;
+  $('play').disabled=advancingWord;
   $('next').textContent=state.index+1<length||(!['words','name'].includes(state.group)&&row>=0&&row+1<list.length)?'다음 글자':state.group==='words'?(list.length>1?'다음 단어':'한 번 더 쓰기'):state.group==='name'?'처음으로':'글자 고르기';
   $('reset').hidden=!db.settings.repeat;
   $('guided').hidden=complete()||failed<2;
@@ -614,7 +641,7 @@ function peoplePanel(editing){
 function optionsPanel(){
  const switches={voice:'음성 안내',auto:'다음 글자로 자동 이동',numbers:'획 번호',arrows:'방향 화살표',start:'시작점',lines:'안내선',repeat:'다시 쓰기 버튼'};
  const check=(id,label,on)=>'<label><input type="checkbox" id="'+id+'" '+(on?'checked':'')+'> '+label+'</label>';
- $('panel').innerHTML='<h2>학습 설정</h2><form id="options"><label>판정 난이도 <select id="difficulty"><option value="easy">쉬움</option><option value="normal">보통</option><option value="precise">정확하게</option></select></label><label>기본 학습 단계 <select id="stage"><option value="trace">따라 쓰기</option><option value="free">혼자 쓰기</option></select></label><label>시범 속도 <select id="speed"><option value=".65">느리게</option><option value="1">보통</option><option value="1.35">빠르게</option></select></label><div class="toolbar">'+Object.entries(switches).map(([k,v])=>check(k,v,db.settings[k])).join('')+'</div><div class="toolbar">'+groups.map(g=>check('show-'+g.id,g.title,!db.hidden.includes(g.id))).join('')+'</div><button>설정 저장</button></form><form id="changePin"><label>새 PIN 4자리 <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label><button>PIN 변경</button></form><p class="sub">단어 놀이터에서는 다음 글자 버튼을 눌러 진행합니다. 음성은 기기에 설치된 한국어 음성을 사용합니다.</p>';
+ $('panel').innerHTML='<h2>학습 설정</h2><form id="options"><label>판정 난이도 <select id="difficulty"><option value="easy">쉬움</option><option value="normal">보통</option><option value="precise">정확하게</option></select></label><label>기본 학습 단계 <select id="stage"><option value="trace">따라 쓰기</option><option value="free">혼자 쓰기</option></select></label><label>시범 속도 <select id="speed"><option value=".65">느리게</option><option value="1">보통</option><option value="1.35">빠르게</option></select></label><div class="toolbar">'+Object.entries(switches).map(([k,v])=>check(k,v,db.settings[k])).join('')+'</div><div class="toolbar">'+groups.map(g=>check('show-'+g.id,g.title,!db.hidden.includes(g.id))).join('')+'</div><button>설정 저장</button></form><form id="changePin"><label>새 PIN 4자리 <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" required></label><button>PIN 변경</button></form><p class="sub">단어 놀이터에서는 다음 글자로 자동 이동해요. 단어를 다 쓰면 다음 단어를 눌러요. 음성은 기기에 설치된 한국어 음성을 사용합니다.</p>';
  $('difficulty').value=db.settings.difficulty;$('stage').value=db.settings.stage;$('speed').value=String(db.settings.speed).replace(/^0\./,'.');
  $('options').onsubmit=e=>{
   e.preventDefault();const hidden=groups.filter(g=>!$('show-'+g.id).checked).map(g=>g.id);
