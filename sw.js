@@ -1,5 +1,5 @@
 const prefix='sseuk-shell:'+self.registration.scope+':';
-const name=prefix+'v3.6';
+const name=prefix+'v3.7';
 const shell='./index.html';
 
 self.addEventListener('install',event=>{
