@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.5</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.6</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -167,7 +167,13 @@ function balancedParts([a,b,c],refined){
  return parts;
 }
 // Copybook proportions for isolated jamo and the three syllable structures.
-const currentLayout='copybook-v3';
+const currentLayout='copybook-v4';
+const bentLeadG=[[[0,0],[1,0],[.985,.61],[.94,1]]];
+const compactCh=[
+ [[.49,0],[.49,.22]],
+ [[.09,.27],[.70,.27],[.62,.44],[.45,.65],[.04,1]],
+ [[.45,.65],[.68,.85],[.96,1]]
+];
 const horizontalVowels='ㅗㅛㅜㅠㅡ';
 const narrowVowels='ㅏㅑㅓㅕ';
 const copybookModels={
@@ -223,10 +229,16 @@ function consonantSize(jamo,width,height){
  return [width,height];
 }
 function copybookStrokes(letter,jamo,layout){
- const updated=layout!=='copybook', modern=layout===currentLayout;
+ const updated=layout!=='copybook';
+ const modern=layout===currentLayout||layout==='copybook-v3';
+ const fontInspired=layout===currentLayout;
  const output=[];
  const put=(j,x,y,w,h,part)=>{
-  const model=modern?currentModels[j]:updated&&j==='ㅃ'?widerDoubleB:copybookModels[j];
+  let model=modern?currentModels[j]:updated&&j==='ㅃ'?widerDoubleB:copybookModels[j];
+  if(fontInspired&&part===0&&jamo){
+   if(j==='ㄱ'&&(horizontalVowels.includes(jamo[1])||mixed[jamo[1]]))model=bentLeadG;
+   if(j==='ㅊ')model=compactCh;
+  }
   output.push(...scale(model,x,y,w,h).map(points=>({part,jamo:j,points})));
  };
  const centeredCon=(j,cx,cy,w,h,part)=>{
@@ -271,10 +283,20 @@ function copybookStrokes(letter,jamo,layout){
   }
   if(c){
    const [left,,right,bottom]=bounds(output.map(stroke=>stroke.points));
+   const horizontal=horizontalVowels.includes(b);
    const width=Math.min(pairs[c]?165:143,(right-left)*(pairs[c] ? .82 : .71));
-   const height=c==='ㅇ'&&modern?73:'ㅇㅎ'.includes(c)?67:'ㅅㅈㅊ'.includes(c)?61:63;
-   const fittedWidth=updated&&finalAspect[c]?Math.min(width,height*finalAspect[c]):width;
-   centeredCon(c,(left+right)/2,bottom+24+height/2,fittedWidth,height,2);
+   if(fontInspired&&c==='ㅇ'){
+    const height=61, ovalWidth=Math.min(width,height*(horizontal?1.66:1.43));
+    put(c,(left+right-ovalWidth)/2,bottom+20,ovalWidth,height,2);
+   }else if(fontInspired&&c==='ㄱ'&&!horizontal){
+    const cornerWidth=Math.min(143,(right-left)*.71);
+    put(c,right-cornerWidth,bottom+21,cornerWidth,61,2);
+   }else{
+    const height=c==='ㅇ'&&modern?73:'ㅇㅎ'.includes(c)?67:'ㅅㅈㅊ'.includes(c)?61:63;
+    const fittedWidth=updated&&finalAspect[c]?Math.min(width,height*finalAspect[c]):width;
+    const finalWidth=fontInspired&&c==='ㅁ'?Math.min(width,height*1.52):fittedWidth;
+    centeredCon(c,(left+right)/2,bottom+24+height/2,finalWidth,height,2);
+   }
   }
  }
  // Center the visible group, including narrow vowels and asymmetric syllables.
@@ -284,7 +306,7 @@ function copybookStrokes(letter,jamo,layout){
 }
 function strokesFor(letter,layout=currentLayout){
  const jamo=splitSyllable(letter), refined=layout==='refined';
- if([currentLayout,'copybook-v2','copybook'].includes(layout))return copybookStrokes(letter,jamo,layout);
+ if([currentLayout,'copybook-v3','copybook-v2','copybook'].includes(layout))return copybookStrokes(letter,jamo,layout);
  let parts=layout==='legacy'?legacyLayouts[letter]:jamo?balancedParts(jamo,refined):null;
  if(!parts&&jamo){
   const [a,b,c]=jamo, top=c?156:251;
