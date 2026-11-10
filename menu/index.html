@@ -64,8 +64,18 @@
  .work{grid-template-columns:minmax(0,1fr) minmax(190px,32%)}
  .board{width:min(100%,max(150px,calc(100svh - 177px)))}
 }
+.controls button{min-width:0;word-break:keep-all}
+.controls .tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:361px) and (max-width:660px) and (orientation:portrait){
+ .controls .tools{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media(max-width:360px){
+ .controls .tools button{flex-direction:row;gap:5px}
+}
+.practice-nav{display:grid;grid-template-columns:minmax(0,1fr)}
+.practice-nav #allWords{width:100%;min-height:48px;white-space:nowrap;background:#e5effd;color:#164e95}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.7</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.8</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -385,7 +395,7 @@ function render(){
   app.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>enter(choosing,set[+b.dataset.letter]));
   $('home').onclick=home;$('backPage')?.addEventListener('click',()=>choose(choosing,page-1));$('nextPage')?.addEventListener('click',()=>choose(choosing,page+1));return;
  }
-  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><p id="saveStatus" class="sub"></p></aside></div>';
+  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav practice-nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><p id="saveStatus" class="sub"></p></aside></div>';
   const by=id=>document.getElementById(id);
   by('home').onclick=home;
   by('sound').onclick=()=>speak((names[letter()]??letter())+'. '+statusText());
