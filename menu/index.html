@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.9</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v4.0</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -120,7 +120,7 @@ const mixed={'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'
 for(const [k,[a,b]] of Object.entries(mixed))models[k]=[...scale(models[a],0,.55,.57,.42),...scale(models[b],.68,0,.32,1)];
 const names=Object.fromEntries(consonants.map((c,i)=>[c,'기역 니은 디귿 리을 미음 비읍 시옷 이응 지읒 치읓 키읔 티읕 피읖 히읗'.split(' ')[i]]));
 mids.forEach((c,i)=>names[c]=String.fromCharCode(0xac00+11*588+i*28));
-const layouts={
+const legacyLayouts={
  '가': [['ㄱ',52,104,106,105],['ㅏ',220,65,77,190]],
  '간': [['ㄱ',53,77,102,91],['ㅏ',218,52,73,145],['ㄴ',83,240,198,66]],
  '밤': [['ㅂ',53,66,106,117],['ㅏ',218,52,73,145],['ㅁ',94,237,171,73]]
@@ -129,9 +129,31 @@ function splitSyllable(letter){
  const n=letter.charCodeAt(0)-0xac00;
  return n>=0&&n<11172?[leads[Math.floor(n/588)],mids[Math.floor(n%588/28)],tails[n%28]]:null;
 }
-function strokesFor(letter){
+function balancedParts([a,b,c]){
+ const horizontal='ㅗㅛㅜㅠㅡ'.includes(b);
+ const compound=Boolean(mixed[b]);
+ let parts;
+ if(compound){
+  parts=c?[[a,83,55,105,54],[b,58,52,240,146]]:
+          [[a,75,65,118,105],[b,52,56,252,234]];
+ }else if(horizontal){
+  const vowelTop=c?151:198, vowelHeight=c?51:83;
+  parts=c?[[a,112,57,136,71],[b,76,vowelTop,208,vowelHeight]]:
+          [[a,105,60,150,112],[b,60,vowelTop,240,vowelHeight]];
+ }else{
+  const narrow=b==='ㅣ';
+  parts=c?[[a,narrow?92:75,75,narrow?108:106,104],[b,narrow?170:207,52,narrow?112:79,145]]:
+          [[a,narrow?85:63,103,narrow?121:119,134],[b,narrow?178:212,61,narrow?112:83,226]];
+ }
+ if(c){
+  const width=pairs[c]?176:['ㅁ','ㅇ','ㅎ'].includes(c)?126:144;
+  parts.push([c,(360-width)/2,225,width,70]);
+ }
+ return parts;
+}
+function strokesFor(letter,legacy=false){
  const jamo=splitSyllable(letter);
- let parts=layouts[letter];
+ let parts=legacy?legacyLayouts[letter]:jamo?balancedParts(jamo):null;
  if(!parts&&jamo){
   const [a,b,c]=jamo, top=c?156:251;
   if(mixed[b])parts=[[a,52,43,123,top*.48],[b,48,43,258,top]];
@@ -152,8 +174,9 @@ function sample(points,step=6){
   return output;
 }
 function judge(ink,target,difficulty='normal'){
-  const path=sample(target), input=sample(ink);
   const total=target.slice(1).reduce((sum,p,i)=>sum+distance(p,target[i]),0);
+  const interval=Math.min(6,total/4);
+  const path=sample(target,interval), input=sample(ink,interval);
   const base={easy:34,normal:27,precise:21}[difficulty];
   const start=Math.min(base,total*.34), width=Math.min(base,total*.42);
   if(distance(input[0],target[0])>start)return 'start';
@@ -271,12 +294,12 @@ function speak(text){
 function stop(){clearTimeout(timer);demoToken++;demo=null;active=null;draft=[];if('speechSynthesis' in window)speechSynthesis.cancel()}
 function letter(){return lettersOf(state.text)[state.index]}
 function strokes(){
- const base=strokesFor(letter()), custom=db.paths[letter()];
+ const base=strokesFor(letter(),state.layout!=='balanced'), custom=db.paths[letter()];
  return custom?base.map((s,i)=>({...s,points:custom[i]})):base;
 }
 function complete(){return state.ink.length===strokes().length}
 function enter(group,item){
- stop();state={group,id:item.id,text:item.text,image:item.image??'',index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
+ stop();state={group,id:item.id,text:item.text,image:item.image??'',layout:'balanced',index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
  failed=0;showHint=false;message='';persist();render();
 }
 function home(){stop();screen='home';admin=false;render()}
@@ -284,7 +307,9 @@ function choose(group,p=0){stop();choosing=group;page=p;screen='choose';render()
 function resume(){
  const saved=db.sessions[db.active];
  if(!saved)return;
- stop();state=clone(saved);screen='write';failed=0;showHint=false;message='';render();scheduleNext();
+ stop();state=clone(saved);
+ if(!state.ink.length&&!Object.values(state.done).some(entry=>entry.ink.length))state.layout='balanced';
+ screen='write';failed=0;showHint=false;message='';render();scheduleNext();
 }
 function step(index){
  stop();state.done[state.index]={ink:clone(state.ink),attempts:state.attempts};
