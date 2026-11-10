@@ -74,8 +74,15 @@
 }
 .practice-nav{display:grid;grid-template-columns:minmax(0,1fr)}
 .practice-nav #allWords{width:100%;min-height:48px;white-space:nowrap;background:#e5effd;color:#164e95}
+.letter-model{margin:10px 0 0;border:1px solid #cfe2f6;border-radius:14px;background:#f2f8ff;padding:0 9px}
+.letter-model summary{min-height:44px;padding:11px 3px;font-weight:850;color:#195498}
+.letter-model .model-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:260px;margin:0 auto;text-align:center}
+.model-pair figure{margin:0;min-width:0}
+.model-pair figcaption{font-size:13px;font-weight:800;margin:5px 0}
+.model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
+.model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.8</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v3.9</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -225,7 +232,7 @@ try{
  }
 }catch{storageOK=false}
 let state=null, screen='home', timer=0, demoToken=0, active=null, draft=[], failed=0, showHint=false, message='', demo=null, choosing='', page=0, admin=false;
-let learningGroup='con';
+let learningGroup='con', modelOpen=false;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const uid=()=>globalThis.crypto?.randomUUID?.()??Date.now().toString(36)+Math.random().toString(36).slice(2);
 const h=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -395,7 +402,7 @@ function render(){
   app.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>enter(choosing,set[+b.dataset.letter]));
   $('home').onclick=home;$('backPage')?.addEventListener('click',()=>choose(choosing,page-1));$('nextPage')?.addEventListener('click',()=>choose(choosing,page+1));return;
  }
-  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav practice-nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><p id="saveStatus" class="sub"></p></aside></div>';
+  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav practice-nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><details class="letter-model" id="letterModel"'+(modelOpen?' open':'')+'><summary>반듯한 글씨 본보기</summary><div id="modelContent"></div></details><p id="saveStatus" class="sub"></p></aside></div>';
   const by=id=>document.getElementById(id);
   by('home').onclick=home;
   by('sound').onclick=()=>speak((names[letter()]??letter())+'. '+statusText());
@@ -412,6 +419,10 @@ function render(){
   for(const mode of ['trace','free'])by(mode).onclick=()=>{stop();state.mode=mode;showHint=false;message='';persist();render();scheduleNext()};
   by('guided').onclick=()=>{if(!complete())animate(state.ink.length,true,true)};
   by('png').onclick=saveArtwork;
+  by('letterModel').ontoggle=()=>{
+   modelOpen=by('letterModel').open;
+   paint();
+  };
   wire(by('board'));paint();
 }
 function statusText(){
@@ -427,9 +438,24 @@ function statusText(){
   return (state.mode==='free'||!db.settings.start)&&!showHint?'어디서 시작할까요?':'노란 점에서 시작해요.';
 }
 const poly=(pts,color,w,more='')=>'<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round" '+more+'/>';
+const writingGrid='<rect x="30" y="30" width="300" height="300" rx="12" fill="none" stroke="#c7dbeb" stroke-width="2"/><path d="M180 30v300M30 180h300" stroke="#c7dbeb" stroke-dasharray="5 7"/>';
+function modelGuide(){
+ const [,vowel,final]=splitSyllable(letter())??[];
+ if(final)return '받침을 아래쪽에 쓰고, 위 글자와 조금 띄워요.';
+ if(!vowel)return '칸 가운데에 놓고, 시작점부터 천천히 써요.';
+ if('ㅗㅛㅜㅠㅡ'.includes(vowel))return '자음은 위에, 모음은 아래에 놓아요.';
+ if(mixed[vowel])return '모음이 자음의 아래와 오른쪽에 들어가요.';
+ return '자음과 모음 사이에 작은 여백을 두어요.';
+}
+function showLetterModel(all){
+ const content=$('modelContent');
+ const preview=(label,ink,color)=>'<figure><svg viewBox="0 0 360 360" aria-hidden="true"><rect width="360" height="360" rx="24" fill="#fff"/>'+writingGrid+ink.map(s=>poly(s.points,color,12)).join('')+'</svg><figcaption>'+label+'</figcaption></figure>';
+ const next='<div class="model-pair">'+preview('본보기',all,'#235777')+preview('내 글씨',state.ink,'#235777')+'</div><p class="model-tip">'+modelGuide()+'</p>';
+ if(content.innerHTML!==next)content.innerHTML=next;
+}
 function paint(){
   const all=strokes(),index=state.ink.length, current=all[index], board=document.getElementById('board');
-  let out='<path d="M180 16v328M16 180h328" stroke="#e4edf2" stroke-dasharray="5 7"/>';
+  let out=modelOpen?writingGrid:'<path d="M180 16v328M16 180h328" stroke="#e4edf2" stroke-dasharray="5 7"/>';
   if(current?.part===2)out+='<rect x="29" y="215" width="302" height="120" rx="18" fill="#eff7df" stroke="#a4c88d" stroke-dasharray="5 5"/>';
   if((state.mode==='trace'&&db.settings.lines)||showHint)out+=all.map(s=>poly(s.points,'#dae6ef',15)).join('');
   if(current&&((state.mode==='trace'&&db.settings.lines)||showHint))out+=poly(current.points,'#9fc8f3',showHint?25:16);
@@ -452,6 +478,7 @@ function paint(){
   if(demo)out+=poly(demo,'#1762c5',10);
   if(draft.length)out+=poly(draft,'#2457a1',10);
   board.innerHTML=out;
+  if(modelOpen&&!draft.length)showLetterModel(all);
   const status=document.getElementById('status'), val=statusText();
   if(status.textContent!==val)status.textContent=val;
   status.classList.toggle('done',complete());
