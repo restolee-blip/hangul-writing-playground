@@ -7,7 +7,7 @@
 :root{color-scheme:light;--ink:#203450;--paper:#fff9ec;--blue:#185fc0;--line:#dce6eb;font-family:system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink)}button{font:inherit;font-weight:750;color:inherit;min-height:56px;border:2px solid transparent;border-radius:17px;background:#edf6ff;padding:8px 12px;cursor:pointer;touch-action:manipulation}button:focus-visible,select:focus-visible{outline:3px solid var(--blue);outline-offset:3px}button:disabled{opacity:.47;cursor:default}svg.icon{width:23px;height:23px;vertical-align:middle;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}main{max-width:940px;margin:auto;padding:12px max(12px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-right))}header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.brand{font-weight:900;letter-spacing:-.05em;font-size:clamp(17px,4vw,24px)}.tag{font-size:12px;color:#4b6076;background:#f3ead7;padding:5px 8px;border-radius:99px;white-space:nowrap}.home{text-align:center;background:#fffdf7;border:1px solid #eee3ce;border-radius:30px;padding:20px 14px 28px}.hero{width:min(260px,70%);display:block;margin:4px auto 0}.eyebrow{color:#285d88;font-size:14px;font-weight:800;margin:8px 0}h1{margin:0;letter-spacing:-.07em;font-size:clamp(30px,7vw,52px);line-height:1.12}p{line-height:1.5}.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:610px;margin:18px auto 0}.card{min-height:108px;background:#e3f1ff;border-color:#c9e3fb;font-size:clamp(14px,3.5vw,18px)}.card:nth-child(2){background:#e9f5de;border-color:#d6e9c9}.card:nth-child(3){background:#fff0cb;border-color:#f2dfad}.card strong{display:block;font-size:34px;line-height:1.1;margin-bottom:6px}.resume{margin-top:12px;background:#205db0;color:white}.sub{color:#4b6076;font-size:14px}.work{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,295px);gap:12px;align-items:start}.sheet,.controls{border-radius:23px;background:#fff;border:1px solid var(--line);padding:9px}.top,.tools{display:flex;gap:7px;align-items:center;justify-content:space-between}.top{margin-bottom:8px}.title{font-weight:850;font-size:20px}.sound{background:#e2f2ff}.board{width:100%;max-width:525px;display:block;margin:auto;aspect-ratio:1;touch-action:none;user-select:none;-webkit-user-select:none;overscroll-behavior:contain;border:2px solid #d6e6ef;border-radius:18px;background:#fbfdff;cursor:crosshair}.board text{font-family:inherit}.status{min-height:44px;margin:5px 0 0;display:grid;place-items:center;text-align:center;font-weight:800;line-height:1.2}.tools{display:grid;grid-template-columns:1fr 1fr}.tools button{display:flex;align-items:center;justify-content:center;gap:5px;font-size:14px}.mode{display:flex;gap:6px;margin-bottom:9px}.mode button{flex:1;font-size:14px}.mode [aria-pressed=true]{background:#dceefc;border-color:#81b6ec;color:#154e97}.nav{display:flex;gap:8px;margin-top:8px}.nav button{flex:1}.next{background:#dff1d5;color:#23502b}.done{color:#285b38;background:#eef8e5;border-radius:12px}.below{margin:10px 2px 0;font-size:13px}.levels{padding:12px 0 0}.levels label{display:flex;justify-content:space-between;align-items:center;gap:8px}.levels select{min-height:40px;font:inherit;border:1px solid var(--line);border-radius:10px;background:#fff;color:inherit}summary{cursor:pointer}.letters{grid-template-columns:repeat(4,minmax(0,1fr))}.letters button{font-size:30px;min-height:76px}.return{margin-top:15px}.progress{font-size:13px;color:#4b6076;white-space:nowrap}.helpDone{grid-column:1/-1;background:#fff1cf}.hint{background:#fff1cf}.storage{text-align:center;margin:11px 0 0}.compact{display:none}
 @media(max-width:660px){.work{grid-template-columns:1fr;gap:6px}.sheet,.controls{padding:6px}.board{width:min(100%, max(238px, calc(100svh - 356px)), 470px)}.mode{margin-bottom:5px}.top{margin-bottom:5px}.status{min-height:36px}.tools{grid-template-columns:repeat(4,1fr);gap:4px}.tools button{flex-direction:column;gap:1px;padding:4px 1px;font-size:12px}.nav{margin-top:5px}.below{margin-top:7px}}
 @media(max-height:520px) and (orientation:landscape){.work{grid-template-columns:minmax(0,1fr) minmax(205px,34%)}.board{width:min(100%,max(190px,calc(100svh - 155px)))}.tools{grid-template-columns:1fr 1fr}.tools button{flex-direction:row}.status{min-height:32px}}
-.writing-picture{width:38px;height:38px;object-fit:contain;vertical-align:middle;margin-right:6px}.avatar{width:40px;height:40px;display:block;margin:auto}.homefoot{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:18px}.wordstrip{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}.wordstrip span{padding:2px 6px;border-radius:6px}.wordstrip svg{display:block;width:27px;height:27px}.wordstrip .current{background:#e3f1ff;color:#144f94;font-weight:900}.letters img{display:block;width:100%;height:70px;object-fit:contain}.admin{max-width:780px;margin:auto;padding:16px;background:white;border:1px solid var(--line);border-radius:22px}.admin h1{font-size:32px}.admin form,.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.admin input:not([type=checkbox]),.admin select,.admin textarea{min-height:46px;font:inherit;padding:8px;border:1px solid #acbccb;border-radius:9px;max-width:100%;color:inherit}.admin ul{padding:0;list-style:none}.admin li{border-bottom:1px solid var(--line);padding:8px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.admin li strong{min-width:100px}.admin [role=status]{color:#174b79;font-weight:750}.preview{display:flex;gap:8px;flex-wrap:wrap}.preview svg{width:90px;background:#f2f7ff;border-radius:10px}.preview figure{margin:0;text-align:center}.admin details{margin:12px 0}.admin button{min-height:44px}.board{max-width:min(525px, max(190px, 69svh))}[hidden]{display:none!important}.choices .card{overflow-wrap:anywhere}
+.writing-picture{width:38px;height:38px;object-fit:contain;vertical-align:middle;margin-right:6px}.avatar{width:40px;height:40px;display:block;margin:auto}.homefoot{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:18px}.wordstrip{text-align:center;overflow-x:auto}.word-run{display:block;margin:auto}.wordstrip .word-run{height:46px;width:auto}.preview .word-run{width:100%;max-height:94px}.preview .word-preview{max-width:100%;min-width:0;flex:1}.letters img{display:block;width:100%;height:70px;object-fit:contain}.admin{max-width:780px;margin:auto;padding:16px;background:white;border:1px solid var(--line);border-radius:22px}.admin h1{font-size:32px}.admin form,.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.admin input:not([type=checkbox]),.admin select,.admin textarea{min-height:46px;font:inherit;padding:8px;border:1px solid #acbccb;border-radius:9px;max-width:100%;color:inherit}.admin ul{padding:0;list-style:none}.admin li{border-bottom:1px solid var(--line);padding:8px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap}.admin li strong{min-width:100px}.admin [role=status]{color:#174b79;font-weight:750}.preview{display:flex;gap:8px;flex-wrap:wrap}.preview svg{width:90px;background:#f2f7ff;border-radius:10px}.preview figure{margin:0;text-align:center}.admin details{margin:12px 0}.admin button{min-height:44px}.board{max-width:min(525px, max(190px, 69svh))}[hidden]{display:none!important}.choices .card{overflow-wrap:anywhere}
 .activity-home{padding:clamp(18px,5vw,44px) clamp(10px,3vw,28px);background:#fffdf7}
 .activity-home h1{font-size:clamp(27px,5vw,42px)}
 .main-choices{max-width:790px;gap:clamp(6px,1.7vw,15px);margin-top:clamp(16px,4vw,32px);grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.4</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.5</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -467,18 +467,32 @@ function step(index){
  state.layout=prior?.ink.length?(prior.layout??'legacy'):currentLayout;
  failed=0;showHint=false;message='';persist();render();
 }
-function randomWord(previousId){
+function randomWord(){
  const list=rows('words');
  if(!list.length){choose('words');return}
- const candidates=list.length>1?list.filter(item=>item.id!==previousId):list;
- enter('words',candidates[Math.floor(Math.random()*candidates.length)]);
+ const saved=db.sessions[db.active];
+ const draws=db.wordDraws??={};
+ const draw=Object.hasOwn(draws,db.active)?draws[db.active]:null;
+ const last=saved?.group==='words'?saved.id:draw?.last;
+ let seen=new Set(Array.isArray(draw?.seen)?draw.seen:[]);
+ if(last)seen.add(last);
+ let candidates=list.filter(item=>!seen.has(item.id));
+ if(!candidates.length){
+  seen=new Set();
+  candidates=list.length>1?list.filter(item=>item.id!==last):list;
+ }
+ const item=candidates[Math.floor(Math.random()*candidates.length)];
+ const visibleIds=new Set(list.map(row=>row.id));
+ seen.add(item.id);
+ draws[db.active]={last:item.id,seen:[...seen].filter(id=>visibleIds.has(id))};
+ enter('words',item);
 }
 function advance(){
  if(!complete())return;
  if(state.index+1<lettersOf(state.text).length){step(state.index+1);return}
  const list=rows(state.group), index=list.findIndex(x=>x.id===state.id);
  if(['con','vow','plain','tail'].includes(state.group)&&index>=0&&list[index+1])enter(state.group,list[index+1]);
- else if(state.group==='words')randomWord(state.id);
+ else if(state.group==='words')randomWord();
  else if(state.group==='name')home();
  else choose(state.group);
 }
@@ -499,6 +513,29 @@ function normalize(text){return text.trim().normalize('NFC').replace(/\s+/g,' ')
 function baselineOffset(model){
  const [,top,,bottom]=bounds(model.map(stroke=>stroke.points));
  return Math.max(-top,300-bottom);
+}
+function wordRun(text,entryAt=()=>null){
+ const glyphs=[];
+ let x=18;
+ for(const char of text){
+  if(char===' '){x+=56;continue}
+  const entry=entryAt(glyphs.length), ink=entry?.ink??[];
+  const model=practiceStrokes(char,ink.length?entry.layout??'legacy':undefined);
+  const [left,,right]=bounds(model.map(stroke=>stroke.points));
+  const width=Math.max(28,right-left);
+  glyphs.push({char,ink,model,left:x,width,x:x-left+(width-(right-left))/2,y:baselineOffset(model)});
+  x+=width+34;
+ }
+ return {glyphs,width:x-16};
+}
+function wordSvg(run,text,activeIndex=-1){
+ const shapes=run.glyphs.map(({ink,model,left,width,x,y},i)=>{
+  const finished=ink.length===model.length;
+  const highlight=i===activeIndex?'<rect x="'+(left-10)+'" y="18" width="'+(width+20)+'" height="308" rx="18" fill="#e3f1ff"/>':'';
+  return highlight+'<g transform="translate('+x+' '+y+')">'+
+   (finished?ink:model).map(s=>poly(s.points,finished?'#22619f':'#587998',15)).join('')+'</g>';
+ }).join('');
+ return '<svg class="word-run" viewBox="0 0 '+run.width+' 342" role="img" aria-label="'+h(text)+'">'+shapes+'</svg>';
 }
 function cardSvg(strokeList,offset=0,color='#22619f'){
  return '<svg viewBox="0 0 360 360" aria-hidden="true"><g transform="translate(0 '+offset+')">'+
@@ -583,7 +620,7 @@ function render(){
   app.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>enter(choosing,set[+b.dataset.letter]));
   $('home').onclick=home;$('backPage')?.addEventListener('click',()=>choose(choosing,page-1));$('nextPage')?.addEventListener('click',()=>choose(choosing,page+1));return;
  }
-  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav practice-nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><details class="letter-model" id="letterModel"'+(modelOpen?' open':'')+'><summary>반듯한 글씨 본보기</summary><div id="modelContent"></div></details><p id="saveStatus" class="sub"></p></aside></div>';
+  app.innerHTML='<div class="work"><section class="sheet"><div class="top"><button id="home" aria-label="처음으로">'+icon('home')+'</button><span class="title">'+(state.image?'<img class="writing-picture" src="'+state.image+'" alt="">':'')+h(letter())+' 쓰기</span><button id="sound" class="sound" aria-label="글자와 안내 듣기">'+icon('sound')+'</button></div><svg id="board" class="board" viewBox="0 0 360 360" role="img" aria-label="글자 쓰기 칸"></svg><div id="status" class="status" role="status"></div><button id="next" class="complete-next" hidden>다음 글자</button><div id="wordstrip" class="wordstrip"></div></section><aside class="controls"><div class="mode"><button id="trace" aria-pressed="'+(state.mode==='trace')+'">따라 쓰기</button><button id="free" aria-pressed="'+(state.mode==='free')+'">혼자 쓰기</button></div><div class="tools"><button id="play">'+icon('play')+'다시 보기</button><button id="undo">'+icon('undo')+'한 획 지우기</button><button id="reset">'+icon('reset')+'다시 쓰기</button><button id="hint" class="hint">'+icon('hint')+'힌트 보기</button></div><div class="nav practice-nav"><button id="prev">이전 글자</button><button id="allWords"'+(state.group==='words'?'':' hidden')+'>단어 모두 보기</button><button id="drawAnother" hidden>다른 단어 뽑기</button></div><div class="nav"><button id="guided" hidden>시범과 함께</button><button id="png" hidden>작품 저장</button></div><details class="letter-model" id="letterModel"'+(modelOpen?' open':'')+'><summary>반듯한 글씨 본보기</summary><div id="modelContent"></div></details><p id="saveStatus" class="sub"></p></aside></div>';
   const by=id=>document.getElementById(id);
   by('home').onclick=home;
   by('sound').onclick=()=>speak((names[letter()]??letter())+'. '+statusText());
@@ -597,6 +634,7 @@ function render(){
   };
   by('next').onclick=advance;
   by('allWords').onclick=()=>choose('words');
+  by('drawAnother').onclick=()=>randomWord();
   for(const mode of ['trace','free'])by(mode).onclick=()=>{stop();state.mode=mode;showHint=false;message='';persist();render();scheduleNext()};
   by('guided').onclick=()=>{if(!complete())animate(state.ink.length,true,true)};
   by('png').onclick=saveArtwork;
@@ -677,18 +715,11 @@ function paint(){
   $('guided').hidden=complete()||failed<2;
   $('png').hidden=!complete()||state.index!==length-1||!['name','words'].includes(state.group);
   board.setAttribute('aria-label',letter()+' 쓰기 칸. '+Math.min(index+1,all.length)+' / '+all.length+'획');
+  $('drawAnother').hidden=state.group!=='words'||list.length<2||draft.length>0||state.ink.length>0||
+   Object.values(state.done).some(entry=>entry.ink.length>0);
   const strip=$('wordstrip');
-  if(length>1){
-    const progress=lettersOf(state.text).map((l,i)=>{
-      const entry=i===state.index?state:state.done[i];
-      const ink=entry?.ink??[];
-      const model=practiceStrokes(l,ink.length?entry.layout??'legacy':undefined);
-      const finished=ink.length===model.length;
-      const preview=cardSvg(finished?ink:model,baselineOffset(model),finished?'#22619f':'#587998');
-      return '<span role="img" class="'+(i===state.index?'current':'')+'" aria-label="'+h(l+(finished?' 완료':''))+'">'+preview+'</span>';
-    }).join('');
-    if(strip.innerHTML!==progress)strip.innerHTML=progress;
-  }else strip.innerHTML='';
+  const progress=length>1?wordSvg(wordRun(state.text,i=>i===state.index?state:state.done[i]),state.text,state.index):'';
+  if(strip.innerHTML!==progress)strip.innerHTML=progress;
   $('saveStatus').textContent=storageOK?'이 기기에 저장됨':'이 기기에 저장할 수 없어요.';
 
 }
@@ -813,11 +844,8 @@ function validCard(text,group){
  return text.length===1&&Boolean(splitSyllable(text)[2])===(group==='tail');
 }
 function previewLetters(text){
- const chars=lettersOf(text);
- return chars.map(l=>{
-  const model=practiceStrokes(l);
-  return '<figure>'+cardSvg(model,chars.length>1?baselineOffset(model):0)+'<figcaption>'+h(l)+'</figcaption></figure>';
- }).join('');
+ if(lettersOf(text).length>1)return '<figure class="word-preview">'+wordSvg(wordRun(text),text)+'<figcaption>'+h(text)+'</figcaption></figure>';
+ return '<figure>'+cardSvg(practiceStrokes(text))+'<figcaption>'+h(text)+'</figcaption></figure>';
 }
 function catalogPanel(group,editing){
  const list=db.catalog[group], row=list.find(x=>x.id===editing);
@@ -873,7 +901,7 @@ function peoplePanel(editing){
   if(act==='reset'&&!confirm(p.name+'의 활동 기록과 이어쓰기를 지울까요?'))return;
   commit(()=>{
    if(act==='hide'){p.hidden=!p.hidden;if(p.hidden&&db.active===p.id)db.active='guest'}
-   else{db.records=db.records.filter(r=>r.profile!==p.id);delete db.sessions[p.id]}
+   else{db.records=db.records.filter(r=>r.profile!==p.id);delete db.sessions[p.id];if(db.wordDraws)delete db.wordDraws[p.id]}
   },()=>teacher('people','','저장했어요.'));
  });
 }
@@ -910,24 +938,24 @@ function saveComputerCopy(){
  download(new Blob([html],{type:'text/html;charset=utf-8'}),'hangul_writing_playground.html');
 }
 function saveArtwork(){
- const canvas=document.createElement('canvas'), chars=lettersOf(state.text), size=260;
- canvas.width=chars.length*size+64;canvas.height=348;
+ const canvas=document.createElement('canvas'), run=wordRun(state.text,i=>i===state.index?state:state.done[i]);
+ const scale=260/360, contentWidth=run.glyphs.length===1?360:run.width;
+ canvas.width=Math.ceil(contentWidth*scale)+64;canvas.height=348;
  const ctx=canvas.getContext('2d');
  ctx.fillStyle='#fff9ec';ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.font='bold 28px system-ui';ctx.fillStyle='#203450';ctx.textAlign='center';ctx.fillText(state.text,canvas.width/2,43);
- chars.forEach((char,i)=>{
-  ctx.save();ctx.translate(32+i*size,60);ctx.scale(size/360,size/360);
-  ctx.fillStyle='white';ctx.fillRect(5,5,350,350);
-  ctx.lineWidth=10;ctx.lineCap='round';ctx.lineJoin='round';
-  const entry=i===state.index?state:state.done[i];
-  const ink=entry?.ink??[];
-  if(ink.length&&chars.length>1)ctx.translate(0,baselineOffset(practiceStrokes(char,entry.layout??'legacy')));
+ ctx.fillStyle='white';ctx.fillRect(32,60,canvas.width-64,260);
+ ctx.translate(32,60);ctx.scale(scale,scale);
+ ctx.lineWidth=10;ctx.lineCap='round';ctx.lineJoin='round';
+ for(const {ink,x,y} of run.glyphs){
+  ctx.save();
+  if(run.glyphs.length>1)ctx.translate(x,y);
   for(const stroke of ink){
    ctx.strokeStyle=stroke.guided?'#7967a3':'#235777';ctx.beginPath();
    stroke.points.forEach(([x,y],j)=>j?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
   }
   ctx.restore();
- });
+ }
  canvas.toBlob(blob=>{if(blob)download(blob,state.text+'.png')},'image/png');
 }
 function validPath(path,count){
@@ -969,6 +997,9 @@ function validBackup(x){
   if(!p||!id(p.id)||ids.has(p.id)||typeof p.name!=='string'||!canWrite(p.name)||!avatars.includes(p.avatar)||typeof p.hidden!=='boolean')return false;
   ids.add(p.id);
  }
+ if(x.wordDraws!==undefined&&(!x.wordDraws||typeof x.wordDraws!=='object'||Array.isArray(x.wordDraws)||
+  Object.entries(x.wordDraws).some(([owner,draw])=>!ids.has(owner)||!draw||!id(draw.last)||
+   !Array.isArray(draw.seen)||draw.seen.some(card=>!id(card)))))return false;
  if(!ids.has(x.active)||typeof x.pin!=='string'||!/^([0-9]{4})?$/.test(x.pin)||x.hidden.some(g=>!groupIds.includes(g)))return false;
  const st=x.settings;
  if(!['easy','normal','precise'].includes(st.difficulty)||!['free','trace'].includes(st.stage)||![.65,1,1.35].includes(st.speed)||['voice','auto','numbers','arrows','start','lines','repeat'].some(k=>typeof st[k]!=='boolean'))return false;
@@ -995,7 +1026,7 @@ function recordsPanel(filter=''){
  $('recordFilter').value=filter;$('recordFilter').onchange=e=>teacher('records',e.target.value);
  $('backup').onclick=backup;
  $('wipe').onclick=()=>{
-  if(confirm('모든 유아의 활동 기록과 이어쓰기를 지울까요? 명단과 학습 카드는 유지돼요.'))commit(()=>{db.records=[];db.sessions={}},()=>teacher('records','','활동 기록을 초기화했어요.'));
+  if(confirm('모든 유아의 활동 기록과 이어쓰기를 지울까요? 명단과 학습 카드는 유지돼요.'))commit(()=>{db.records=[];db.sessions={};db.wordDraws={}},()=>teacher('records','','활동 기록을 초기화했어요.'));
  };
  let restoreSelection=0;
  $('restore').onchange=async e=>{
