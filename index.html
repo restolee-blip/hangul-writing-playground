@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v4.1</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.2</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -166,8 +166,101 @@ function balancedParts([a,b,c],refined){
  }
  return parts;
 }
-function strokesFor(letter,layout='refined'){
+// Copybook proportions for isolated jamo and the three syllable structures.
+const currentLayout='copybook';
+const horizontalVowels='ㅗㅛㅜㅠㅡ';
+const narrowVowels='ㅏㅑㅓㅕ';
+const copybookModels={
+ ...roundedModels,
+ 'ㅅ':[[[.54,0],[.45,.31],[.29,.62],[0,1]],[[.43,.35],[.64,.67],[1,1]]],
+ 'ㅊ':[[[.48,0],[.48,.18]],[[.14,.29],[.74,.29],[.64,.47],[.46,.68],[.06,1]],[[.46,.68],[.70,.86],[.94,1]]],
+ 'ㅋ':[[[0,0],[1,0],[1,1]],[[.12,.49],[1,.49]]],
+ 'ㅌ':[[[0,0],[1,0]],[[0,.49],[.88,.49]],[[0,0],[0,1],[1,1]]],
+ 'ㅍ':[[[.04,0],[.96,0]],[[.25,0],[.25,1]],[[.75,0],[.75,1]],[[0,1],[1,1]]],
+ 'ㅎ':[[[.5,0],[.5,.17]],[[.04,.30],[.96,.30]],...scale([loop],.16,.46,.68,.54)],
+ 'ㅏ':[[[0,0],[0,1]],[[0,.46],[1,.46]]],
+ 'ㅑ':[[[0,0],[0,1]],[[0,.33],[1,.33]],[[0,.62],[1,.62]]],
+ 'ㅓ':[[[0,.46],[1,.46]],[[1,0],[1,1]]],
+ 'ㅕ':[[[0,.33],[1,.33]],[[0,.62],[1,.62]],[[1,0],[1,1]]],
+ 'ㅛ':[[[.36,0],[.36,1]],[[.64,0],[.64,1]],[[0,1],[1,1]]],
+ 'ㅠ':[[[0,0],[1,0]],[[.36,0],[.36,1]],[[.64,0],[.64,1]]]
+};
+for(const [key,[a,b]] of Object.entries(pairs)){
+ copybookModels[key]=[...scale(copybookModels[a],0,0,.42,1),...scale(copybookModels[b],.58,0,.42,1)];
+}
+for(const [key,a] of Object.entries({'ㅐ':'ㅏ','ㅒ':'ㅑ','ㅔ':'ㅓ','ㅖ':'ㅕ'})){
+ copybookModels[key]=[...scale(copybookModels[a],0,0,.66,1),[[1,0],[1,1]]];
+}
+const bounds=paths=>{
+ const points=paths.flat(), xs=points.map(p=>p[0]), ys=points.map(p=>p[1]);
+ return [Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];
+};
+function consonantSize(jamo,width,height){
+ if(pairs[jamo])return [width,height];
+ if(jamo==='ㅇ'){
+  const size=Math.min(width,height);
+  return [size,size];
+ }
+ if(jamo==='ㅎ')return [Math.min(width,height*1.28),height];
+ if('ㅅㅈㅊ'.includes(jamo))return [width,Math.min(height,width*1.10)];
+ return [width,height];
+}
+function copybookStrokes(letter,jamo){
+ const output=[];
+ const put=(j,x,y,w,h,part)=>output.push(...scale(copybookModels[j],x,y,w,h).map(points=>({part,jamo:j,points})));
+ const centeredCon=(j,cx,cy,w,h,part)=>{
+  const [width,height]=consonantSize(j,w,h);
+  put(j,cx-width/2,cy-height/2,width,height,part);
+ };
+ if(!jamo){
+  if(mixed[letter]){
+   const [horizontal,vertical]=mixed[letter];
+   put(horizontal,76,190,116,58,0);
+   put(vertical,216,68,vertical==='ㅣ'?0:68,224,0);
+   output.forEach(stroke=>stroke.jamo=letter);
+  }else if(leads.includes(letter)||tails.includes(letter)){
+   centeredCon(letter,180,180,letter==='ㅇ'?168:192,letter==='ㅊ'?204:178,0);
+  }else if(horizontalVowels.includes(letter)){
+   const height=letter==='ㅡ'?0:80;
+   put(letter,65,180-height/2,230,height,0);
+  }else{
+   const width=letter==='ㅣ'?0:narrowVowels.includes(letter)?78:112;
+   put(letter,180-width/2,65,width,230,0);
+  }
+ }else{
+  const [a,b,c]=jamo;
+  if(mixed[b]){
+   const [horizontal,vertical]=mixed[b];
+   centeredCon(a,139,c?108:129,pairs[a]?130:112,c?84:109,0);
+   put(horizontal,69,c?171:212,143,c?44:62,1);
+   put(vertical,238,c?66:67,vertical==='ㅣ'?0:narrowVowels.includes(vertical)?48:67,c?151:225,1);
+   output.filter(stroke=>stroke.part===1).forEach(stroke=>stroke.jamo=b);
+  }else if(horizontalVowels.includes(b)){
+   centeredCon(a,180,c?108:134,pairs[a]?163:139,c?86:124,0);
+   const height=b==='ㅡ'?0:c?44:68;
+   put(b,64,c?176:221,232,height,1);
+  }else{
+   const vowelWidth=b==='ㅣ'?0:narrowVowels.includes(b)?68:91;
+   const leadWidth=pairs[a]?132:112;
+   const vowelX=leadWidth/2+27;
+   centeredCon(a,0,c?144:182,leadWidth,c?110:147,0);
+   put(b,vowelX,c?65:63,vowelWidth,c?153:231,1);
+  }
+  if(c){
+   const [left,,right,bottom]=bounds(output.map(stroke=>stroke.points));
+   const width=Math.min(pairs[c]?165:143,(right-left)*(pairs[c] ? .82 : .71));
+   const height='ㅇㅎ'.includes(c)?67:'ㅅㅈㅊ'.includes(c)?61:63;
+   centeredCon(c,(left+right)/2,bottom+24+height/2,width,height,2);
+  }
+ }
+ // Center the visible group, including narrow vowels and asymmetric syllables.
+ const [left,top,right,bottom]=bounds(output.map(stroke=>stroke.points));
+ const dx=180-(left+right)/2, dy=180-(top+bottom)/2;
+ return output.map(stroke=>({...stroke,points:stroke.points.map(([x,y])=>[x+dx,y+dy])}));
+}
+function strokesFor(letter,layout=currentLayout){
  const jamo=splitSyllable(letter), refined=layout==='refined';
+ if(layout===currentLayout)return copybookStrokes(letter,jamo);
  let parts=layout==='legacy'?legacyLayouts[letter]:jamo?balancedParts(jamo,refined):null;
  if(!parts&&jamo){
   const [a,b,c]=jamo, top=c?156:251;
@@ -314,7 +407,7 @@ function strokes(){
 }
 function complete(){return state.ink.length===strokes().length}
 function enter(group,item){
- stop();state={group,id:item.id,text:item.text,image:item.image??'',layout:'refined',index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
+ stop();state={group,id:item.id,text:item.text,image:item.image??'',layout:currentLayout,index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
  failed=0;showHint=false;message='';persist();render();
 }
 function home(){stop();screen='home';admin=false;render()}
@@ -323,12 +416,16 @@ function resume(){
  const saved=db.sessions[db.active];
  if(!saved)return;
  stop();state=clone(saved);
- if(!state.ink.length&&!Object.values(state.done).some(entry=>entry.ink.length))state.layout='refined';
+ for(const entry of Object.values(state.done)){
+  if(entry.ink.length&&entry.layout===undefined)entry.layout=state.layout??'legacy';
+ }
+ state.layout=state.ink.length?(state.layout??'legacy'):currentLayout;
  screen='write';failed=0;showHint=false;message='';render();scheduleNext();
 }
 function step(index){
- stop();state.done[state.index]={ink:clone(state.ink),attempts:state.attempts};
+ stop();state.done[state.index]={ink:clone(state.ink),attempts:state.attempts,layout:state.layout};
  state.index=index;const prior=state.done[index];state.ink=prior?.ink??[];state.attempts=prior?.attempts??0;
+ state.layout=prior?.ink.length?(prior.layout??'legacy'):currentLayout;
  failed=0;showHint=false;message='';persist();render();
 }
 function randomWord(previousId){
@@ -449,7 +546,7 @@ function render(){
   by('play').onclick=()=>animate(complete()?0:state.ink.length,complete());
   by('hint').onclick=()=>{if(!complete()){showHint=true;animate(state.ink.length)}};
   by('undo').onclick=()=>{stop();state.ink.pop();failed=0;showHint=false;message='';persist();paint()};
-  by('reset').onclick=()=>{stop();state.ink=[];state.attempts=0;failed=0;showHint=false;message='';persist();paint()};
+  by('reset').onclick=()=>{stop();state.ink=[];state.layout=currentLayout;state.attempts=0;failed=0;showHint=false;message='';persist();paint()};
   by('prev').onclick=()=>{
    if(state.index>0)step(state.index-1);
    else {const list=rows(state.group), i=list.findIndex(x=>x.id===state.id);if(i>0)enter(state.group,list[i-1])}
