@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v4.0</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">그림 메뉴 v4.1</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -118,6 +118,14 @@ for(const [k,[a,b]] of Object.entries(pairs))models[k]=[...scale(models[a],0,0,.
 for(const [k,a] of Object.entries({'ㅐ':'ㅏ','ㅒ':'ㅑ','ㅔ':'ㅓ','ㅖ':'ㅕ'}))models[k]=[...scale(models[a],0,0,.72,1),[[1,0],[1,1]]];
 const mixed={'ㅘ':'ㅗㅏ','ㅙ':'ㅗㅐ','ㅚ':'ㅗㅣ','ㅝ':'ㅜㅓ','ㅞ':'ㅜㅔ','ㅟ':'ㅜㅣ','ㅢ':'ㅡㅣ'};
 for(const [k,[a,b]] of Object.entries(mixed))models[k]=[...scale(models[a],0,.55,.57,.42),...scale(models[b],.68,0,.32,1)];
+const roundedModels={
+ ...models,
+ 'ㅈ':[[[.12,0],[.70,0],[.63,.24],[.46,.55],[.08,.98]],[[.49,.50],[.70,.76],[.92,.98]]],
+ 'ㅊ':[[[.48,0],[.48,.17]],[[.12,.29],[.70,.29],[.63,.46],[.46,.68],[.08,.98]],[[.49,.64],[.70,.83],[.92,.98]]]
+};
+for(const [key,[a,b]] of Object.entries(pairs)){
+ roundedModels[key]=[...scale(roundedModels[a],0,0,.43,1),...scale(roundedModels[b],.57,0,.43,1)];
+}
 const names=Object.fromEntries(consonants.map((c,i)=>[c,'기역 니은 디귿 리을 미음 비읍 시옷 이응 지읒 치읓 키읔 티읕 피읖 히읗'.split(' ')[i]]));
 mids.forEach((c,i)=>names[c]=String.fromCharCode(0xac00+11*588+i*28));
 const legacyLayouts={
@@ -129,7 +137,7 @@ function splitSyllable(letter){
  const n=letter.charCodeAt(0)-0xac00;
  return n>=0&&n<11172?[leads[Math.floor(n/588)],mids[Math.floor(n%588/28)],tails[n%28]]:null;
 }
-function balancedParts([a,b,c]){
+function balancedParts([a,b,c],refined){
  const horizontal='ㅗㅛㅜㅠㅡ'.includes(b);
  const compound=Boolean(mixed[b]);
  let parts;
@@ -146,14 +154,21 @@ function balancedParts([a,b,c]){
           [[a,narrow?85:63,103,narrow?121:119,134],[b,narrow?178:212,61,narrow?112:83,226]];
  }
  if(c){
-  const width=pairs[c]?176:['ㅁ','ㅇ','ㅎ'].includes(c)?126:144;
-  parts.push([c,(360-width)/2,225,width,70]);
+  let width=pairs[c]?176:['ㅁ','ㅇ','ㅎ'].includes(c)?126:144;
+  let center=180;
+  if(refined){
+   const xs=parts.flatMap(([j,x,y,w,h])=>scale(roundedModels[j],x,y,w,h).flat().map(point=>point[0]));
+   const left=Math.min(...xs), right=Math.max(...xs);
+   center=(left+right)/2;
+   width=Math.min(width,(right-left)*(pairs[c] ? .88 : .72));
+  }
+  parts.push([c,center-width/2,225,width,refined?61:70]);
  }
  return parts;
 }
-function strokesFor(letter,legacy=false){
- const jamo=splitSyllable(letter);
- let parts=legacy?legacyLayouts[letter]:jamo?balancedParts(jamo):null;
+function strokesFor(letter,layout='refined'){
+ const jamo=splitSyllable(letter), refined=layout==='refined';
+ let parts=layout==='legacy'?legacyLayouts[letter]:jamo?balancedParts(jamo,refined):null;
  if(!parts&&jamo){
   const [a,b,c]=jamo, top=c?156:251;
   if(mixed[b])parts=[[a,52,43,123,top*.48],[b,48,43,258,top]];
@@ -161,7 +176,7 @@ function strokesFor(letter,legacy=false){
   else parts=[[a,52,61,126,top*.76],[b,211,43,98,top]];
   if(c)parts.push([c,84,234,192,76]);
  }else if(!parts)parts=[[letter,...(letter==='ㅏ'?[140,56,113,248]:[77,78,206,202])]];
- return parts.flatMap(([j,x,y,w,h],part)=>scale(models[j],x,y,w,h).map(points=>({part,jamo:j,points})));
+ return parts.flatMap(([j,x,y,w,h],part)=>scale((refined?roundedModels:models)[j],x,y,w,h).map(points=>({part,jamo:j,points})));
 }
 const distance = (a,b) => Math.hypot(a[0]-b[0],a[1]-b[1]);
 const mix = (a,b,t) => a.map((v,i)=>v+(b[i]-v)*t);
@@ -294,12 +309,12 @@ function speak(text){
 function stop(){clearTimeout(timer);demoToken++;demo=null;active=null;draft=[];if('speechSynthesis' in window)speechSynthesis.cancel()}
 function letter(){return lettersOf(state.text)[state.index]}
 function strokes(){
- const base=strokesFor(letter(),state.layout!=='balanced'), custom=db.paths[letter()];
+ const base=strokesFor(letter(),state.layout??'legacy'), custom=db.paths[letter()];
  return custom?base.map((s,i)=>({...s,points:custom[i]})):base;
 }
 function complete(){return state.ink.length===strokes().length}
 function enter(group,item){
- stop();state={group,id:item.id,text:item.text,image:item.image??'',layout:'balanced',index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
+ stop();state={group,id:item.id,text:item.text,image:item.image??'',layout:'refined',index:0,ink:[],done:{},run:uid(),attempts:0,mode:db.settings.stage,difficulty:db.settings.difficulty};screen='write';
  failed=0;showHint=false;message='';persist();render();
 }
 function home(){stop();screen='home';admin=false;render()}
@@ -308,7 +323,7 @@ function resume(){
  const saved=db.sessions[db.active];
  if(!saved)return;
  stop();state=clone(saved);
- if(!state.ink.length&&!Object.values(state.done).some(entry=>entry.ink.length))state.layout='balanced';
+ if(!state.ink.length&&!Object.values(state.done).some(entry=>entry.ink.length))state.layout='refined';
  screen='write';failed=0;showHint=false;message='';render();scheduleNext();
 }
 function step(index){
@@ -482,15 +497,17 @@ function paint(){
   const all=strokes(),index=state.ink.length, current=all[index], board=document.getElementById('board');
   let out=modelOpen?writingGrid:'<path d="M180 16v328M16 180h328" stroke="#e4edf2" stroke-dasharray="5 7"/>';
   if(current?.part===2)out+='<rect x="29" y="215" width="302" height="120" rx="18" fill="#eff7df" stroke="#a4c88d" stroke-dasharray="5 5"/>';
-  if((state.mode==='trace'&&db.settings.lines)||showHint)out+=all.map(s=>poly(s.points,'#dae6ef',15)).join('');
-  if(current&&((state.mode==='trace'&&db.settings.lines)||showHint))out+=poly(current.points,'#9fc8f3',showHint?25:16);
+  if((state.mode==='trace'&&db.settings.lines)||showHint)out+=all.map(s=>poly(s.points,'#dae6ef',11)).join('');
+  if(current&&((state.mode==='trace'&&db.settings.lines)||showHint))out+=poly(current.points,'#9fc8f3',showHint?22:13);
   out+=state.ink.map(x=>poly(x.points,x.guided?'#7967a3':'#235777',10)).join('');
   if(current&&(state.mode==='trace'||showHint)&&!draft.length){
     const [[x,y]]=current.points;
     if(db.settings.lines||showHint)out+=poly(current.points,'#3e81cd',3,'stroke-dasharray="5 8"');
     if(db.settings.arrows||showHint){
       const points=current.points;
-      const segments=points.length>8?[[points[1],points[4]]]:points.slice(1).map((p,i)=>[points[i],p]);
+      const segments=points.length>8?[[points[1],points[4]]]:
+        points.length>3?[[points[0],points[1]],[points[1],points.at(-1)]]:
+        points.slice(1).map((p,i)=>[points[i],p]);
       for(const [a,b] of segments){
         const [ax,ay]=mix(a,b,.66), dx=b[0]-a[0], dy=b[1]-a[1], length=Math.hypot(dx,dy);
         if(length<12)continue;
