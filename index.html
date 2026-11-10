@@ -82,7 +82,7 @@
 .model-pair svg{display:block;width:100%;max-width:115px;margin:auto;aspect-ratio:1}
 .model-tip{margin:7px 0 9px;text-align:center;font-size:14px;word-break:keep-all}
 </style></head>
-<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.3</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
+<body><main><header><span class="brand">쓱쓱! 한글 쓰기 놀이터</span><div class="header-controls"><span class="tag">바른 글씨 v4.4</span><button id="muteVoice" type="button" aria-label="음소거" aria-pressed="false">음소거</button></div></header><div id="app"></div></main>
 <script id="stroke-model">
 const loop=Array.from({length:17},(_,i)=>i===16?[.5,0]:[.5-.5*Math.sin(i*Math.PI/8),.5-.5*Math.cos(i*Math.PI/8)]);
 const scale=(paths,x,y,w,h)=>paths.map(path=>path.map(([u,v])=>[x+u*w,y+v*h]));
@@ -167,7 +167,7 @@ function balancedParts([a,b,c],refined){
  return parts;
 }
 // Copybook proportions for isolated jamo and the three syllable structures.
-const currentLayout='copybook-v2';
+const currentLayout='copybook-v3';
 const horizontalVowels='ㅗㅛㅜㅠㅡ';
 const narrowVowels='ㅏㅑㅓㅕ';
 const copybookModels={
@@ -191,7 +191,22 @@ for(const [key,[a,b]] of Object.entries(pairs)){
 for(const [key,a] of Object.entries({'ㅐ':'ㅏ','ㅒ':'ㅑ','ㅔ':'ㅓ','ㅖ':'ㅕ'})){
  copybookModels[key]=[...scale(copybookModels[a],0,0,.66,1),[[1,0],[1,1]]];
 }
+// Higher-resolution loops keep the same start, direction and single-stroke motion.
+const smoothLoop=Array.from({length:49},(_,i)=>i===48?[.5,0]:[
+ .5-.5*Math.sin(i*Math.PI/24),.5-.5*Math.cos(i*Math.PI/24)
+]);
+const currentModels={
+ ...copybookModels,
+ 'ㅇ':[smoothLoop],
+ 'ㅎ':[...copybookModels['ㅎ'].slice(0,2),...scale([smoothLoop],.16,.46,.68,.54)],
+ 'ㅐ':[...copybookModels['ㅏ'],[[1,0],[1,1]]],
+ 'ㅒ':[...copybookModels['ㅑ'],[[1,0],[1,1]]]
+};
 const widerDoubleB=[...scale(copybookModels['ㅂ'],0,0,.39,1),...scale(copybookModels['ㅂ'],.61,0,.39,1)];
+for(const [key,[a,b]] of Object.entries(pairs)){
+ currentModels[key]=[...scale(currentModels[a],0,0,.42,1),...scale(currentModels[b],.58,0,.42,1)];
+}
+currentModels['ㅃ']=widerDoubleB;
 const finalAspect={'ㄱ':1.7,'ㄴ':1.85,'ㄷ':1.45,'ㄹ':1.65,'ㅁ':1.38,'ㅂ':1.48,'ㅋ':1.65,'ㅌ':1.5,'ㅍ':1.65};
 const bounds=paths=>{
  const points=paths.flat(), xs=points.map(p=>p[0]), ys=points.map(p=>p[1]);
@@ -207,10 +222,11 @@ function consonantSize(jamo,width,height){
  if('ㅅㅈㅊ'.includes(jamo))return [width,Math.min(height,width*1.10)];
  return [width,height];
 }
-function copybookStrokes(letter,jamo,updated){
+function copybookStrokes(letter,jamo,layout){
+ const updated=layout!=='copybook', modern=layout===currentLayout;
  const output=[];
  const put=(j,x,y,w,h,part)=>{
-  const model=updated&&j==='ㅃ'?widerDoubleB:copybookModels[j];
+  const model=modern?currentModels[j]:updated&&j==='ㅃ'?widerDoubleB:copybookModels[j];
   output.push(...scale(model,x,y,w,h).map(points=>({part,jamo:j,points})));
  };
  const centeredCon=(j,cx,cy,w,h,part)=>{
@@ -244,9 +260,10 @@ function copybookStrokes(letter,jamo,updated){
   }else if(horizontalVowels.includes(b)){
    centeredCon(a,180,c?108:134,pairs[a]?163:139,c?86:124,0);
    const height=b==='ㅡ'?0:c?44:68;
-   put(b,64,c?176:221,232,height,1);
+   const width=modern?(c?194:210):232;
+   put(b,180-width/2,c?176:221,width,height,1);
   }else{
-   const vowelWidth=b==='ㅣ'?0:narrowVowels.includes(b)?68:91;
+   const vowelWidth=b==='ㅣ'?0:narrowVowels.includes(b)?68:modern&&'ㅐㅒ'.includes(b)?76:91;
    const leadWidth=pairs[a]?132:112;
    const vowelX=leadWidth/2+27;
    centeredCon(a,0,c?144:182,leadWidth,c?110:147,0);
@@ -255,7 +272,7 @@ function copybookStrokes(letter,jamo,updated){
   if(c){
    const [left,,right,bottom]=bounds(output.map(stroke=>stroke.points));
    const width=Math.min(pairs[c]?165:143,(right-left)*(pairs[c] ? .82 : .71));
-   const height='ㅇㅎ'.includes(c)?67:'ㅅㅈㅊ'.includes(c)?61:63;
+   const height=c==='ㅇ'&&modern?73:'ㅇㅎ'.includes(c)?67:'ㅅㅈㅊ'.includes(c)?61:63;
    const fittedWidth=updated&&finalAspect[c]?Math.min(width,height*finalAspect[c]):width;
    centeredCon(c,(left+right)/2,bottom+24+height/2,fittedWidth,height,2);
   }
@@ -267,7 +284,7 @@ function copybookStrokes(letter,jamo,updated){
 }
 function strokesFor(letter,layout=currentLayout){
  const jamo=splitSyllable(letter), refined=layout==='refined';
- if(layout===currentLayout||layout==='copybook')return copybookStrokes(letter,jamo,layout===currentLayout);
+ if([currentLayout,'copybook-v2','copybook'].includes(layout))return copybookStrokes(letter,jamo,layout);
  let parts=layout==='legacy'?legacyLayouts[letter]:jamo?balancedParts(jamo,refined):null;
  if(!parts&&jamo){
   const [a,b,c]=jamo, top=c?156:251;
@@ -629,7 +646,7 @@ function paint(){
     if(db.settings.lines||showHint)out+=poly(current.points,'#3e81cd',3,'stroke-dasharray="5 8"');
     if(db.settings.arrows||showHint){
       const points=current.points;
-      const segments=points.length>8?[[points[1],points[4]]]:
+      const segments=points.length>8?[[points[1],points[Math.round((points.length-1)/4)]]]:
         points.length>3?[[points[0],points[1]],[points[1],points.at(-1)]]:
         points.slice(1).map((p,i)=>[points[i],p]);
       for(const [a,b] of segments){
