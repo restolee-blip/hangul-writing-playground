@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>한글 놀이터</title>
+<style>
+:root{font-family:system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;background:#fbf6ec;color:#233849}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:clamp(18px,4vw,48px)}
+.heading{text-align:center;margin:0 0 clamp(22px,4vw,40px)}h1{font-size:clamp(38px,7vw,70px);letter-spacing:-.065em;margin:0;color:#204360}.heading p{margin:8px 0 0;font-size:clamp(16px,2.5vw,20px);color:#50606a;word-break:keep-all}
+.activities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2vw,22px)}a{text-decoration:none;color:inherit}
+.activity{--surface:#e3f1fc;--edge:#a8c9e3;display:grid;justify-items:center;align-content:center;gap:12px;text-align:center;background:var(--surface);border:2px solid var(--edge);border-radius:26px;min-width:0;min-height:248px;padding:16px;box-shadow:0 4px 0 var(--edge)}
+.activity:nth-child(2){--surface:#e8f4e2;--edge:#afc8a6}.activity:nth-child(3){--surface:#fff0d8;--edge:#dfc098}
+.activity img{width:min(155px,100%);aspect-ratio:1;object-fit:contain}.activity strong{font-size:clamp(19px,2.5vw,27px);word-break:keep-all;line-height:1.25}.activity small{font-size:15px;color:#465763;word-break:keep-all}.activity span{display:grid;gap:4px}
+.teacher{display:flex;justify-content:center;margin-top:26px}.teacher a{display:flex;gap:10px;align-items:center;min-height:56px;padding:6px 16px;border:1px solid #b4c2ce;border-radius:15px;background:#fff;color:#244b70;font-weight:750}.teacher img{width:38px;height:38px;object-fit:contain}
+a:focus-visible{outline:3px solid #154f83;outline-offset:4px}a:active{transform:translateY(2px)}
+@media(max-width:660px){.activities{grid-template-columns:1fr}.activity{grid-template-columns:76px minmax(0,1fr);justify-items:start;align-items:center;gap:16px;text-align:left;padding:10px 14px;min-height:100px;border-radius:21px}.activity img{width:76px}.teacher{justify-content:flex-start;margin-top:20px}}
+
+.map{background:#d9edcd url(assets/menu/playground-map.webp) center/cover;border-radius:30px;padding:clamp(18px,4vw,38px)}
+.map .heading{margin-bottom:clamp(18px,4vw,42px)}
+.map .activity{background:color-mix(in srgb,var(--surface) 92%,white);min-height:220px}
+@media(min-width:661px){.map .activities{align-items:start;margin-top:clamp(12px,4vw,52px)}.map .activity:nth-child(2){margin-top:32px}}
+@media(max-width:660px){.map{border-radius:23px;padding:18px 12px}.map .activity{min-height:92px}.teacher{justify-content:center}}
+</style></head><body><main>
+<section class="map" aria-label="놀이터 지도">
+<header class="heading"><h1>한글 놀이터</h1><p>어떤 놀이를 해 볼까요?</p></header>
+<nav class="activities" aria-label="놀이 고르기">
+<a class="activity" href="hangul.html"><img src="assets/menu/writing.webp" width="155" height="155" alt=""><span><strong>한글 쓰기 놀이터</strong><small>글자와 낱말을 써요</small></span></a>
+<a class="activity" href="verbs/index.html"><img src="assets/menu/movement.webp" width="155" height="155" alt=""><span><strong>동사 놀이터</strong><small>움직임을 몸으로 표현해요</small></span></a>
+<a class="activity" href="opposites.html"><img src="assets/menu/opposites.webp" width="155" height="155" alt=""><span><strong>반대말 놀이터</strong><small>서로 반대인 말을 찾아요</small></span></a>
+</nav>
+</section>
+<div class="teacher"><a href="worksheets.html"><img src="assets/menu/worksheet.webp" width="38" height="38" alt="">활동지 만들기 · 선생님</a></div>
+</main></body></html>
