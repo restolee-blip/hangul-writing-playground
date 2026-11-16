@@ -75,6 +75,16 @@ header nav a{display:inline-flex;min-height:44px;align-items:center;padding:0 6p
 .stroke-word .stroke-box{width:24mm;height:24mm}
 .stroke-word .stroke-box+.stroke-box{border-left:0}
 .review-star{font-size:23pt;line-height:1;color:#344a5c}
+.preview-feedback{margin:0 0 8px;color:#245976;line-height:1.5}
+.preview-feedback:empty{display:none}
+#previewPanel{scroll-margin-top:12px}
+#previewPanel:focus-visible{outline:3px solid #5682b2;outline-offset:2px}
+.paper:not(.paper-empty) > *{flex-shrink:0}
+@media print{
+ .preview-feedback,.paper-empty{display:none!important}
+ .paper{min-height:296.5mm}
+ .paper.landscape{min-height:209.5mm}
+}
 </style>
 </head>
 <body>
@@ -105,7 +115,7 @@ header nav a{display:inline-flex;min-height:44px;align-items:center;padding:0 6p
    <h2>3. 학습지 설정</h2>
    <div class="options"><label><input type="checkbox" id="showImage" checked>그림 표시</label><label><input type="checkbox" id="showAnswer" checked>예시 낱말 표시</label><label><input type="checkbox" id="showLines" checked>연습 칸 보이기</label><label><input type="checkbox" id="showClass">우리 반 이름 표시</label></div>
    <div class="toolbar"><label class="field" style="flex:1">연습 칸<select id="lineCount"><option value="2">2칸</option><option value="3" selected>3칸</option><option value="4">4칸</option></select></label><label class="field" style="flex:1">글씨 크기<select id="fontSize"><option value="normal">보통</option><option value="large">크게</option></select></label></div>
-   <div class="toolbar"><button id="reset">기본 설정</button><button class="primary" id="print">인쇄 · PDF 저장</button></div>
+   <div class="toolbar"><button id="reset">기본 설정</button><button id="showPreview" type="button">미리보기</button><button class="primary" id="print">인쇄 · PDF 저장</button></div>
    <p class="status" id="status" role="status" aria-live="polite"></p>
    <details class="teacher"><summary>자료 추가·관리·백업</summary><p class="small">그림은 PNG 또는 WebP를 올려 주세요. 이 기기 브라우저에 보관되며 다른 기기로 자동 공유되지 않습니다.</p>
      <label class="field">선택한 낱말 그림 교체<select id="assetWord"></select></label>
@@ -115,8 +125,9 @@ header nav a{display:inline-flex;min-height:44px;align-items:center;padding:0 6p
    </details>
    </div>
  </section>
- <section class="panel preview-panel" aria-label="학습지 미리보기">
+ <section id="previewPanel" class="panel preview-panel" aria-label="학습지 미리보기" tabindex="-1">
   <div class="preview-head"><div><h2>인쇄 미리보기</h2><span id="previewTitle">A4 세로 · 출력용</span></div><button id="printTop" class="primary">인쇄 · PDF</button></div>
+  <p class="preview-feedback" id="printStatus" role="status"></p>
   <div class="paper-scroll" id="preview"></div>
  </section>
 </main>
@@ -148,7 +159,7 @@ function setModule(kind){
  else if(kind!=='반대말'&&pairFormat())state.template=kind==='우리 반'?'W08':kind==='동사'?'W04':'W01';
  else if(state.template==='W04'&&kind!=='동사')state.template='W01';
  else if(state.template==='W08'&&kind!=='우리 반')state.template='W01';
- state.selected=state.selected.filter(id=>pairById.has(id)===pairFormat());
+ state.selected=state.selected.filter(id=>pairById.has(id)===pairFormat()).slice(0,cap());
  $('template').value=state.template;state.module=kind;state.topic='';state.search='';$('search').value='';persist();render();}
 function sourceList(){
  if(state.module==='반대말')return lexicon.antonymPairs.map(p=>({id:p.id,text:p.a+' · '+p.b,topic:p.topic,image:p.imageA||p.imageB,pair:true}));
@@ -183,9 +194,8 @@ function pic(src,alt='') {const good=safeImage(src);return good?`<img class="pap
 function cells(text,kind='trace'){
  const chars=[...text];
  const n=Number(state.lineCount)||3;
- const count=chars.filter(char=>char!==' ').length;
- const columns=count>4?Math.min(2,n):n;
- const size=Math.min(24,Math.floor(142/count));
+ const columns=chars.length>5?1:chars.length>3?Math.min(2,n):n;
+ const size=Math.min(24,Math.floor(142/Math.max(1,chars.length)));
  return `<div class="trace-row" style="--groups:${columns};--letters:${chars.length};--trace-size:${size}pt">${Array.from({length:n},(_,i)=>
   `<div class="writing-group" aria-hidden="true">${chars.map(char=>char===' '?'<i></i>':
    `<div class="writing-cell ${i===0?'faint':'extra-faint'}"><span>${kind==='empty'||i===n-1?'':html(char)}</span></div>`).join('')}</div>`).join('')}</div>`;
@@ -213,18 +223,20 @@ function printableItems(){
  return state.template==='W03'&&state.showImage?selected.filter(hasPicture):selected;
 }
 function preview(){
+ $('printStatus').textContent='';
  if(Object.hasOwn(presetSheets,state.strokePreset))return presetPreview(presetSheets[state.strokePreset]);
  const items=printableItems(),isPairs=pairFormat();
- const longer=items.some(w=>[w.text,w.a,w.b].some(text=>text?.replaceAll(' ','').length>4));
- const perPage=isPairs?2:longer?2:state.template==='W07'?6:4;
+ const multipleRows=state.showLines&&items.some(w=>[w.text,w.a,w.b].some(text=>text?.length>3));
+ const longRows=state.showLines&&items.some(w=>[w.text,w.a,w.b].some(text=>text?.length>5));
+ const perPage=isPairs?(longRows?1:2):longRows?2:state.template==='W07'&&!multipleRows?6:4;
  const pages=[];for(let i=0;i<items.length;i+=perPage)pages.push(items.slice(i,i+perPage));if(!pages.length)pages.push([]);
  const umbrellaSheet=state.template==='W01'&&items.length===1&&items[0].id==='U0164';
  const template=umbrellaSheet?'우산 쓰기':(templates.find(x=>x.id===state.template)?.name||'우리 반 학습지');
  const instruction=umbrellaSheet
    ?(state.showAnswer&&state.showLines?'따라 쓰고, 빈칸에 혼자 써요.':state.showImage?'그림을 보고 낱말을 떠올려요.':'낱말을 천천히 써요.')
    :'한글이 쓱쓱! 나의 글씨를 써요';
- $('previewTitle').textContent=(state.template==='W05'?'A4 가로 · ':'A4 세로 · ')+template+' · '+items.length+'개';
- $('preview').innerHTML=pages.map((page,p)=>`<div class="paper ${umbrellaSheet?'featured-word':''} ${state.template==='W05'?'landscape':''} ${state.fontSize==='large'?'big-letters':''}"><div class="paper-head"><h2>${html(template)}</h2><span>${instruction}</span></div><div class="paper-meta"><span>이름: __________________</span>${state.showClass?'<span>반: ___________</span>':''}</div>${page.length?(state.template==='W07'?'<div class="compact-grid">':'')+page.map(w=>isPairs?pair(w,state.template):term(w,state.template)).join('')+(state.template==='W07'?'</div>':''):'<div class="no-data">왼쪽에서 낱말이나 반대말을 선택하면 학습지가 나타납니다.</div>'}<div class="paper-footer"><span>글자를 천천히 살펴보고 자유롭게 써 보세요.</span><span>${p+1} / ${pages.length}</span></div></div>`).join('');
+ $('previewTitle').textContent=(state.template==='W05'?'A4 가로 · ':'A4 세로 · ')+template+' · '+items.length+'개'+(items.length?' · '+pages.length+'쪽':'');
+ $('preview').innerHTML=pages.map((page,p)=>`<div class="paper ${page.length?'':'paper-empty'} ${umbrellaSheet?'featured-word':''} ${state.template==='W05'?'landscape':''} ${state.fontSize==='large'?'big-letters':''}"><div class="paper-head"><h2>${html(template)}</h2><span>${instruction}</span></div><div class="paper-meta"><span>이름: __________________</span>${state.showClass?'<span>반: ___________</span>':''}</div>${page.length?(state.template==='W07'?'<div class="compact-grid">':'')+page.map(w=>isPairs?pair(w,state.template):term(w,state.template)).join('')+(state.template==='W07'?'</div>':''):'<div class="no-data">왼쪽에서 낱말이나 반대말을 선택하면 학습지가 나타납니다.</div>'}<div class="paper-footer"><span>글자를 천천히 살펴보고 자유롭게 써 보세요.</span><span>${p+1} / ${pages.length}</span></div></div>`).join('');
 }
 $('template').onchange=e=>{state.template=e.target.value;state.pictureOnly=state.template==='W03';$('pictureOnly').checked=state.pictureOnly;state.topic='';state.search='';$('search').value='';if(state.template==='W05'||state.template==='W06'){state.module='반대말';state.selected=[]}else if(state.template==='W04'){state.module='동사';state.selected=[]}else if(state.template==='W08'){state.module='우리 반';state.selected=[]}else if(state.module==='반대말'||state.module==='우리 반'){state.module='기본';state.selected=[]}persist();render()};
 $('topic').onchange=e=>{state.topic=e.target.value;persist();render()};
@@ -239,13 +251,63 @@ $('addCustom').onclick=()=>{const text=$('customWord').value.trim();if(!/^[가-�
 $('reset').onclick=()=>{const oldOwn=state.own;state={...defaultState(),own:oldOwn};persist();seed();render();status('학습지 설정만 기본값으로 변경했습니다. 낱말은 보존됩니다.')};
 $('umbrella').onclick=()=>{
  Object.assign(state,{template:'W01',module:'기본',selected:['U0164'],pictureOnly:true,topic:'',search:'우산',showImage:true,showAnswer:true,showLines:true,lineCount:3,fontSize:'normal'});
- seed();persist();render();$('preview').scrollIntoView({block:'start'});
+ seed();persist();render();showPreview();
 };
+function showPreview(){
+ const panel=$('previewPanel');
+ panel.focus({preventScroll:true});
+ panel.scrollIntoView({block:'start'});
+}
+$('showPreview').onclick=showPreview;
+let printPending=false;
+let previewImagesReady;
+function printFeedback(message){
+ $('printStatus').textContent=message;
+}
 async function printPage(){
- if(!Object.hasOwn(presetSheets,state.strokePreset)&&!printableItems().length){status(state.template==='W03'&&state.showImage?'그림이 있는 낱말을 먼저 선택해 주세요.':'인쇄할 낱말을 먼저 선택해 주세요.');return}
- await Promise.allSettled([...$('preview').querySelectorAll('img')].map(img=>img.decode()));
- window.print();
-};$('print').onclick=printPage;$('printTop').onclick=printPage;
+ if(printPending)return;
+ if(!$('auth').classList.contains('hide'))return;
+ if(!Object.hasOwn(presetSheets,state.strokePreset)&&!printableItems().length){
+  showPreview();
+  printFeedback(state.template==='W03'&&state.showImage?'그림이 있는 낱말을 먼저 선택해 주세요.':'인쇄할 낱말을 먼저 선택해 주세요.');
+  return;
+ }
+ const paper=$('preview').firstElementChild;
+ const buttons=[$('print'),$('printTop')];
+ let timeout;
+ printPending=true;
+ buttons.forEach(button=>button.disabled=true);
+ try{
+  const pictures=[...$('preview').querySelectorAll('img')];
+  if(!pictures.every(img=>img.complete&&img.naturalWidth>0)||document.fonts?.status==='loading'||!storedImagesLoaded){
+   showPreview();
+   printFeedback('그림과 글씨를 불러오는 중입니다.');
+   const ready=await Promise.race([
+    Promise.all([previewImagesReady,document.fonts?.ready,...pictures.map(img=>img.decode())]).then(()=>true,()=>false),
+    new Promise(resolve=>{timeout=setTimeout(()=>resolve(false),5000)})
+   ]);
+   if(paper!==$('preview').firstElementChild){
+    printFeedback('미리보기가 바뀌었습니다. 내용을 확인하고 다시 눌러 주세요.');
+    return;
+   }
+   if(!ready){
+    printFeedback(state.strokePreset
+     ?'획순 그림을 불러오지 못했습니다. 잠시 후 인쇄를 다시 눌러 주세요.'
+     :'미리보기 준비를 마치지 못했습니다. 다시 눌러 보세요. 그림이 계속 표시되지 않으면 그림 표시를 끄고 인쇄할 수 있습니다.');
+    return;
+   }
+  }
+  if(!$('auth').classList.contains('hide'))return;
+  printFeedback('');
+  window.print();
+ }finally{
+  clearTimeout(timeout);
+  printPending=false;
+  buttons.forEach(button=>button.disabled=false);
+ }
+}
+$('print').onclick=printPage;
+$('printTop').onclick=printPage;
 function backup(){const payload={schema:'sseuk-worksheets-v2',savedAt:new Date().toISOString(),state,images:Object.fromEntries(images)};const blob=new Blob([JSON.stringify(payload)],{type:'application/json'}),url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='한글_학습지_자료_백업.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);status('학습지 제작실 자료를 백업했습니다. 기존 쓰기 기록은 별도 백업해야 합니다.')} $('backup').onclick=backup;
 $('restore').onclick=()=>$('restoreFile').click();$('restoreFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const v=JSON.parse(await f.text());if(v.schema!=='sseuk-worksheets-v2'||!Array.isArray(v.state?.selected)||!Array.isArray(v.state?.own))throw Error('형식이 맞지 않습니다.');if(!confirm('현재 학습지 설정과 낱말을 백업 파일의 내용으로 교체할까요? 먼저 JSON 백업을 권장합니다.'))return;state={...defaultState(),...v.state};choosePreset(state.strokePreset);images.clear();for(const [id,uri] of Object.entries(v.images||{}))if(/^data:image\/(png|webp|jpeg);base64,/.test(uri))images.set(id,uri);const saved=await saveImages();persist();seed();render();status(saved?'복원했습니다.':'복원한 그림은 이 화면에서 사용할 수 있습니다. 브라우저 저장을 확인해 주세요.')}catch(e){status('복원 실패: '+e.message)}e.target.value=''};
 async function initImages(){try{imageDB=await new Promise((resolve,reject)=>{const req=indexedDB.open('sseuk-worksheet-assets-v2',1);req.onupgradeneeded=()=>req.result.createObjectStore('images');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});const request=imageDB.transaction('images').objectStore('images').getAllKeys();const keys=await new Promise((resolve,reject)=>{request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)});for(const key of keys){const req=imageDB.transaction('images').objectStore('images').get(key);const value=await new Promise((res,rej)=>{req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error)});if(value)images.set(key,value)}}catch{imageDB=null}}
@@ -262,7 +324,7 @@ function strokeBox(letter,kind){
 }
 function presetPreview(sheet){
  const custom=images.get('U0164');
- $('previewTitle').textContent='A4 세로 · '+sheet.title;
+ $('previewTitle').textContent='A4 세로 · '+sheet.title+' · 1쪽';
  $('preview').innerHTML=`<div class="paper stroke-sheet">
   <div class="paper-head"><h2>${sheet.title}</h2><span>이름 __________________</span></div>
   ${sheet.image?`<div class="stroke-picture">${pic(custom||'assets/words/umbrella.webp','노란 우산')}<strong>우산</strong></div>`:''}
@@ -284,7 +346,7 @@ function choosePreset(id,scroll=false){
  $('regularControls').hidden=Boolean(state.strokePreset);
  persist();
  preview();
- if(scroll)$('preview').scrollIntoView({block:'start'});
+ if(scroll)showPreview();
 }
 document.querySelectorAll('[data-preset]').forEach(button=>button.onclick=()=>choosePreset(button.dataset.preset,true));
 $('regularSheet').onclick=()=>choosePreset('');
@@ -296,6 +358,8 @@ new ResizeObserver(([entry])=>{
  paperScroll.style.setProperty('--portrait-zoom',Math.min(1,width/(210*96/25.4)));
  paperScroll.style.setProperty('--landscape-zoom',Math.min(1,width/(297*96/25.4)));
 }).observe(paperScroll);
-seed();choosePreset(state.strokePreset);render();auth();initImages().then(render);
+let storedImagesLoaded=false;
+seed();choosePreset(state.strokePreset);render();auth();
+previewImagesReady=initImages().then(()=>{storedImagesLoaded=true;if(images.size)render()});
 </script>
 </body></html>
